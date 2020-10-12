@@ -1,4 +1,4 @@
-FROM centos:centos8 AS builder
+FROM fedora:32 AS builder
 
 RUN dnf install -y git gcc unbound-devel openssl-devel libcap-ng-devel \
 	autoconf automake libtool make python3
@@ -29,9 +29,9 @@ RUN ./boot.sh && \
 
 WORKDIR /root
 
-FROM centos:centos8
+FROM fedora-minimal:32
 
-RUN dnf install -y unbound openssl libcap-ng jq && dnf clean all
+RUN microdnf install -y unbound openssl libcap-ng jq && microdnf clean all
 
 # We explicitly disable log output to file, but nevertheless we fail to startup
 # if the files don't exist.
