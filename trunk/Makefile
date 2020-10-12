@@ -2,6 +2,7 @@ OVSREPO=https://github.com/openvswitch/ovs.git
 OVSBRANCH=master
 OVNREPO=https://github.com/openvswitch/ovn.git
 OVNBRANCH=master
+CFLAGS="-g -O2"
 
 default: build
 
@@ -19,7 +20,8 @@ build: scripts
 	buildah bud --layers --tag ovn-central:trunk \
 		-v $$(pwd)/gitcache:/gitcache:ro \
 		--build-arg OVSREPO=$(OVSREPO) --build-arg OVSBRANCH=$(OVSBRANCH) \
-		--build-arg OVNREPO=$(OVNREPO) --build-arg OVNBRANCH=$(OVNBRANCH)
+		--build-arg OVNREPO=$(OVNREPO) --build-arg OVNBRANCH=$(OVNBRANCH) \
+		--build-arg CFLAGS=$(CFLAGS)
 
 .PHONY: push
 push:
