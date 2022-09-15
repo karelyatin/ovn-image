@@ -1,28 +1,28 @@
 FROM fedora:32 AS builder
 
-RUN dnf install -y git gcc unbound-devel openssl-devel libcap-ng-devel \
+RUN dnf install -y git-core gcc unbound-devel openssl-devel libcap-ng-devel \
 	autoconf automake libtool make python3
 
 ARG OVSREPO=https://github.com/openvswitch/ovs.git
 ARG OVSBRANCH=master
-ARG OVNREPO=https://github.com/openvswitch/ovn.git
-ARG OVNBRANCH=master
+ARG OVNREPO=https://github.com/ovn-org/ovn.git
+ARG OVNBRANCH=main
 ARG CFLAGS="-g -O2"
 
 VOLUME ["/gitcache"]
 
 WORKDIR /root
-RUN git clone --reference-if-able /gitcache/ovs.git $OVSREPO -b $OVSBRANCH
-RUN git clone --reference-if-able /gitcache/ovn.git $OVNREPO -b $OVNBRANCH
+RUN git clone --reference-if-able /gitcache/ovs.git $OVSREPO
+RUN git clone --reference-if-able /gitcache/ovn.git $OVNREPO
 
 WORKDIR /root/ovs
-RUN ./boot.sh && \
+RUN git checkout $OVSBRANCH && ./boot.sh && \
     ./configure --prefix=/opt --localstatedir=/var --sysconfdir=/etc CFLAGS="$CFLAGS" && \
     make -j4 && \
     make install
 
 WORKDIR /root/ovn
-RUN ./boot.sh && \
+RUN git checkout $OVNBRANCH && ./boot.sh && \
     ./configure --prefix=/opt --localstatedir=/var --sysconfdir=/etc CFLAGS="$CFLAGS" \
         --with-ovs-source=/root/ovs && \
     make -j4 && \
@@ -30,9 +30,7 @@ RUN ./boot.sh && \
 
 WORKDIR /root
 
-FROM fedora-minimal:32
-
-RUN microdnf install -y unbound openssl libcap-ng jq && microdnf clean all
+RUN dnf install -y unbound openssl libcap-ng jq hostname && dnf clean all && rm -rf /var/cache/dnf
 
 # We explicitly disable log output to file, but nevertheless we fail to startup
 # if the files don't exist.
@@ -46,7 +44,6 @@ RUN /bin/bash -c 'mkdir -p /var/lib/openvswitch; \
 RUN /bin/bash -c 'mkdir -p /etc/ovn; \
                   chown -R 1000:1000 /etc/ovn'
 
-COPY --from=builder /opt /opt
 COPY image-env.sh /
 COPY scripts/* /
 

@@ -1,7 +1,7 @@
 OVSREPO=https://github.com/openvswitch/ovs.git
 OVSBRANCH=master
-OVNREPO=https://github.com/openvswitch/ovn.git
-OVNBRANCH=master
+OVNREPO=https://github.com/ovn-org/ovn.git
+OVNBRANCH=main
 CFLAGS="-g -O2"
 
 default: build
